@@ -11,95 +11,103 @@ using AutoGeistModel;
 namespace Deac_Alexandra_Lab5
 {
     enum ActionState { New, Edit, Delete, Nothing }
-    
+
     public partial class MainWindow : Window
     {
         ActionState action = ActionState.Nothing;
         AutoGeistEntitiesModel ctx = new AutoGeistEntitiesModel();
         CollectionViewSource carViewSource;
 
-       // AutoGeistEntitiesCustomer ctx = new AutoGeistEntitiesCustomer();
+        // AutoGeistEntitiesCustomer ctx = new AutoGeistEntitiesCustomer();
         CollectionViewSource customerViewSource;
 
         CollectionViewSource carOrdersViewSource;
 
-        Binding bodyStyleTextBoxBinding = new Binding(); 
-        Binding modelTextBoxBinding = new Binding(); 
+        Binding bodyStyleTextBoxBinding = new Binding();
+        Binding modelTextBoxBinding = new Binding();
         Binding makeTextBoxBinding = new Binding();
 
-        Binding firstNameTextBoxBinding = new Binding(); 
-        Binding lastNameTextBoxBinding = new Binding(); 
-       // Binding purchaseDateDatePickerBinding = new Binding();
+        Binding firstNameTextBoxBinding = new Binding();
+        Binding lastNameTextBoxBinding = new Binding();
+        // Binding purchaseDateDatePickerBinding = new Binding();
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
 
-            modelTextBoxBinding.Path = new PropertyPath("Model"); 
-            makeTextBoxBinding.Path = new PropertyPath("Make"); 
-            bodyStyleTextBoxBinding.Path = new PropertyPath("BodyStyle"); 
-            modelTextBox.SetBinding(TextBox.TextProperty, modelTextBoxBinding); 
-            makeTextBox.SetBinding(TextBox.TextProperty, makeTextBoxBinding); 
+            modelTextBoxBinding.Path = new PropertyPath("Model");
+            makeTextBoxBinding.Path = new PropertyPath("Make");
+            bodyStyleTextBoxBinding.Path = new PropertyPath("BodyStyle");
+            modelTextBox.SetBinding(TextBox.TextProperty, modelTextBoxBinding);
+            makeTextBox.SetBinding(TextBox.TextProperty, makeTextBoxBinding);
             bodyStyleTextBox.SetBinding(TextBox.TextProperty, bodyStyleTextBoxBinding);
 
-            firstNameTextBoxBinding.Path = new PropertyPath("First Name"); 
-            lastNameTextBoxBinding.Path = new PropertyPath("Last Name"); 
-           // purchaseDateDatePickerBinding.Path = new PropertyPath("Purchase Date"); 
-            firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding); 
-            lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding); 
-           // purchaseDateDatePicker.SetBinding(DatePicker.DisplayDateProperty, purchaseDateDatePickerBinding);
+            firstNameTextBoxBinding.Path = new PropertyPath("First Name");
+            lastNameTextBoxBinding.Path = new PropertyPath("Last Name");
+            // purchaseDateDatePickerBinding.Path = new PropertyPath("Purchase Date"); 
+            firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
+            lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
+            // purchaseDateDatePicker.SetBinding(DatePicker.DisplayDateProperty, purchaseDateDatePickerBinding);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            carViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("carViewSource"))); 
+            carViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("carViewSource")));
             carViewSource.Source = ctx.Cars.Local;
             ctx.Cars.Load();
 
-            carOrdersViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("carOrdersViewSource"))); 
-           // carOrdersViewSource.Source = ctx.Orders.Local;
+            carOrdersViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("carOrdersViewSource")));
+            // carOrdersViewSource.Source = ctx.Orders.Local;
             ctx.Orders.Load();
+            BindDataGrid();
 
-            cbCars.ItemsSource = ctx.Cars.Local; 
-           // cbCars.DisplayMemberPath = "Make"; 
+            cbCars.ItemsSource = ctx.Cars.Local;
+            // cbCars.DisplayMemberPath = "Make"; 
             cbCars.SelectedValuePath = "CarId";
-
-            cbCustomers.ItemsSource = ctx.Customers.Local; 
-            //cbCustomers.DisplayMemberPath = "FirstName"; 
+            cbCustomers.ItemsSource = ctx.Customers.Local;
             cbCustomers.SelectedValuePath = "CustId";
 
-            BindDataGrid();
+            customerViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerViewSource")));
+            customerViewSource.Source = ctx.Customers.Local;
+            ctx.Customers.Load();
+
+
         }
 
         private void btnNew_Click(object sender, RoutedEventArgs e)
         {
-            action = ActionState.New; 
-            TabItem ti = tbCtrlAutoGeist.SelectedItem as TabItem; 
-            switch (ti.Header) 
-            { 
-                case "Cars": BindingOperations.ClearBinding(bodyStyleTextBox, TextBox.TextProperty); 
-                    BindingOperations.ClearBinding(makeTextBox, TextBox.TextProperty); 
-                    BindingOperations.ClearBinding(modelTextBox, TextBox.TextProperty); 
-                    bodyStyleTextBox.Text = ""; 
-                    makeTextBox.Text = ""; 
-                    modelTextBox.Text = ""; 
-                    Keyboard.Focus(bodyStyleTextBox); 
-                    break; 
-                case "Customers": BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty); 
-                    BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty); 
-                    firstNameTextBox.Text = ""; 
-                    lastNameTextBox.Text = ""; 
-                    Keyboard.Focus(firstNameTextBox);
+            action = ActionState.New;
+            TabItem ti = tbCtrlAutoGeist.SelectedItem as TabItem;
+            switch (ti.Header)
+            {
+                case "Cars": BindingOperations.ClearBinding(bodyStyleTextBox, TextBox.TextProperty);
+                    BindingOperations.ClearBinding(makeTextBox, TextBox.TextProperty);
+                    BindingOperations.ClearBinding(modelTextBox, TextBox.TextProperty);
+                    bodyStyleTextBox.Text = "";
+                    makeTextBox.Text = "";
+                    modelTextBox.Text = "";
+                    Keyboard.Focus(bodyStyleTextBox);
+                    SetValidationBinding1();
                     break;
-                case "Orders": 
-                    break; 
+                case "Customers": BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
+                    BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
+                    firstNameTextBox.Text = "";
+                    lastNameTextBox.Text = "";
+                    Keyboard.Focus(firstNameTextBox);
+                    SetValidationBinding();
+                    break;
+                case "Orders":
+                    SaveOrders();
+                    break;
             }
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.Edit;
+            SetValidationBinding();
+            SetValidationBinding1();
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
@@ -204,7 +212,7 @@ namespace Deac_Alexandra_Lab5
                     {
                         FirstName = firstNameTextBox.Text.Trim(),
                         LastName = lastNameTextBox.Text.Trim(),
-                       // PurchaseDate = purchaseDateDatePicker.DisplayDate.Trim(),
+                        // PurchaseDate = purchaseDateDatePicker.DisplayDate.Trim(),
                     };
                     ctx.Customers.Add(cust);
                     customerViewSource.View.Refresh();
@@ -218,7 +226,7 @@ namespace Deac_Alexandra_Lab5
                 }
                 firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
                 lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
-               // bodyStyleTextBox.SetBinding(TextBox.TextProperty, bodyStyleTextBoxBinding);
+                // bodyStyleTextBox.SetBinding(TextBox.TextProperty, bodyStyleTextBoxBinding);
             }
             else if (action == ActionState.Edit)
             {
@@ -227,7 +235,7 @@ namespace Deac_Alexandra_Lab5
                     cust = (Customer)carDataGrid.SelectedItem;
                     cust.FirstName = firstNameTextBox.Text.Trim();
                     cust.LastName = lastNameTextBox.Text.Trim();
-                   // cust.PurchaseDate = purchaseDateDatePicker.DisplayDate.Trim();
+                    // cust.PurchaseDate = purchaseDateDatePicker.DisplayDate.Trim();
                     ctx.SaveChanges();
                 }
                 catch (DataException ex)
@@ -238,7 +246,7 @@ namespace Deac_Alexandra_Lab5
                 customerViewSource.View.MoveCurrentTo(cust);
                 firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
                 lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
-               // purchaseDateDatePicker.SetBinding(DatePicker.TextProperty, purchaseDatePickerBinding);
+                // purchaseDateDatePicker.SetBinding(DatePicker.TextProperty, purchaseDatePickerBinding);
             }
             else if (action == ActionState.Delete)
             {
@@ -390,6 +398,57 @@ namespace Deac_Alexandra_Lab5
                                  car.Model
                              };
             carOrdersViewSource.Source = queryOrder.ToList();
+        }
+
+        private void SetValidationBinding()
+        {
+            Binding firstNameValidationBinding = new Binding();
+            firstNameValidationBinding.Source = customerViewSource;
+            firstNameValidationBinding.Path = new PropertyPath("FirstName");
+            firstNameValidationBinding.NotifyOnValidationError = true;
+            firstNameValidationBinding.Mode = BindingMode.TwoWay;
+            firstNameValidationBinding.UpdateSourceTrigger =
+            UpdateSourceTrigger.PropertyChanged;
+            //string required
+            firstNameValidationBinding.ValidationRules.Add(new StringNotEmpty());
+            firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameValidationBinding);
+
+            Binding lastNameValidationBinding = new Binding();
+            lastNameValidationBinding.Source = customerViewSource;
+            lastNameValidationBinding.Path = new PropertyPath("LastName");
+            lastNameValidationBinding.NotifyOnValidationError = true;
+            lastNameValidationBinding.Mode = BindingMode.TwoWay;
+            lastNameValidationBinding.UpdateSourceTrigger =
+            UpdateSourceTrigger.PropertyChanged;
+            //string min length validator
+            lastNameValidationBinding.ValidationRules.Add(new StringMinLength());
+            lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameValidationBinding); //setare binding nou
+        }
+
+        private void SetValidationBinding1()
+        {
+            Binding bodyStyleValidationBinding = new Binding();
+            bodyStyleValidationBinding.Source = carViewSource;
+            bodyStyleValidationBinding.Path = new PropertyPath("BodyStyle");
+            bodyStyleValidationBinding.NotifyOnValidationError = true;
+            bodyStyleValidationBinding.Mode = BindingMode.TwoWay;
+            bodyStyleValidationBinding.UpdateSourceTrigger =
+            UpdateSourceTrigger.PropertyChanged;
+            //string required
+            bodyStyleValidationBinding.ValidationRules.Add(new StringNotEmpty());
+            bodyStyleTextBox.SetBinding(TextBox.TextProperty, bodyStyleValidationBinding);
+
+
+            Binding modelValidationBinding = new Binding();
+            modelValidationBinding.Source = carViewSource;
+            modelValidationBinding.Path = new PropertyPath("Model");
+            modelValidationBinding.NotifyOnValidationError = true;
+            modelValidationBinding.Mode = BindingMode.TwoWay;
+            modelValidationBinding.UpdateSourceTrigger =
+            UpdateSourceTrigger.PropertyChanged;
+            //string min length validator
+            modelValidationBinding.ValidationRules.Add(new StringMinLength());
+            modelTextBox.SetBinding(TextBox.TextProperty, modelValidationBinding); //setare binding nou
         }
     }
 }
